@@ -46,3 +46,38 @@ def login(entrada:schemas.User, db:Session=Depends(get_db)):
 def show_connections(db:Session=Depends(get_db)):
     connections = db.query(models.Connection).all()
     return connections
+
+@app.get('/connections/firstname/{firstname}',response_model=List[schemas.Connection])
+def show_connections_by_firstname(firstname: str, db:Session=Depends(get_db)):
+    connections = db.query(models.Connection).filter_by(First_Name=firstname).all()
+    return connections
+
+@app.get('/connections/lastname/{lastname}',response_model=List[schemas.Connection])
+def show_connections_by_lastname(lastname: str, db:Session=Depends(get_db)):
+    connections = db.query(models.Connection).filter_by(Last_Name=lastname).all()
+    return connections
+
+@app.get('/connections/email/{email}',response_model=List[schemas.Connection])
+def show_connections_by_email(email: str, db:Session=Depends(get_db)):
+    connections = db.query(models.Connection).filter_by(Email_Address=email).all()
+    return connections
+
+@app.get('/connections/company/{company}',response_model=List[schemas.Connection])
+def show_connections_by_company(company: str, db:Session=Depends(get_db)):
+    connections = db.query(models.Connection).filter_by(Company=company).all()
+    return connections
+
+@app.get('/connections/position/{position}',response_model=List[schemas.Connection])
+def show_connections_by_(position: str, db:Session=Depends(get_db)):
+    connections = db.query(models.Connection).filter_by(Position=position).all()
+    return connections
+
+@app.get('/connections/connection/{connection}',response_model=List[schemas.Connection])
+def show_connections_by_(connection: str, db:Session=Depends(get_db)):
+    connections = db.query(models.Connection).filter_by(Connection=connection).all()
+    return connections
+
+@app.post('/connections/',response_model=List[schemas.Connection])
+def show_connections_all_filters(entrada:schemas.Connection, db:Session=Depends(get_db)):
+    connections = db.query(models.Connection).filter_by(First_Name=entrada.First_Name, Last_Name=entrada.Last_Name, Email_Address=entrada.Email_Address, Company=entrada.Company, Position=entrada.Position, Connection=entrada.Connection).all()
+    return connections

@@ -22,3 +22,4 @@ class Connection(BaseModel):
     
     class Config:
         orm_mode =True
+        
