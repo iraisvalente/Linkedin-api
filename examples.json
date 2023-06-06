@@ -1,0 +1,15 @@
+//CREATE USER
+{
+    "First_name": "Irais",
+    "Last_name": "Valente",
+    "Email_Address": "ivalente@gmail.com",
+    "Company": "soa",
+    "Position": "dev",
+    "Password_user": "123"
+}
+
+//LOGIN 
+{
+    "Email_Address": "ivalente@gmail.com",
+    "Password_user": "123"
+}
