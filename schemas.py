@@ -37,7 +37,7 @@ class Company(BaseModel):
     class Config: 
         orm_mode =True
         
-class Connection(BaseModel): 
+class CommonConnection(BaseModel): 
     Connection: str
     Count: str
     

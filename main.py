@@ -104,7 +104,7 @@ def common_companies(db:Session=Depends(get_db)):
     ''')
     return companies.all()
 
-@app.get('/common_connections/',response_model=List[schemas.Connection])
+@app.get('/common_connections/',response_model=List[schemas.CommonConnection])
 def common_companies(db:Session=Depends(get_db)):
     connections = db.execute('''
         SELECT Connection, COUNT(*) as Count 
