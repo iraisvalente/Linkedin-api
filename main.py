@@ -81,3 +81,36 @@ def show_connections_by_(connection: str, db:Session=Depends(get_db)):
 def show_connections_all_filters(entrada:schemas.Connection, db:Session=Depends(get_db)):
     connections = db.query(models.Connection).filter_by(First_Name=entrada.First_Name, Last_Name=entrada.Last_Name, Email_Address=entrada.Email_Address, Company=entrada.Company, Position=entrada.Position, Connection=entrada.Connection).all()
     return connections
+
+@app.get('/common_positions/',response_model=List[schemas.Position])
+def common_positions(db:Session=Depends(get_db)):
+    positions = db.execute('''
+        SELECT Position, COUNT(*) as Count 
+        FROM Connections 
+        GROUP BY Position 
+        ORDER BY COUNT(Position) 
+        DESC LIMIT 5
+    ''')
+    return positions.all()
+
+@app.get('/common_companies/',response_model=List[schemas.Company])
+def common_companies(db:Session=Depends(get_db)):
+    companies = db.execute('''
+        SELECT Company, COUNT(*) as Count 
+        FROM Connections 
+        GROUP BY Company 
+        ORDER BY COUNT(Company)
+        DESC LIMIT 5
+    ''')
+    return companies.all()
+
+@app.get('/common_connections/',response_model=List[schemas.Connection])
+def common_companies(db:Session=Depends(get_db)):
+    connections = db.execute('''
+        SELECT Connection, COUNT(*) as Count 
+        FROM Connections 
+        GROUP BY Connection 
+        ORDER BY COUNT(Connection)
+        DESC LIMIT  5
+    ''')
+    return connections.all()
