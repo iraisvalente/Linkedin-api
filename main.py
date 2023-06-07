@@ -132,7 +132,7 @@ def all_companies(db:Session=Depends(get_db)):
     return companies.all()
 
 @app.get('/all_positions/',response_model=List[schemas.Position])
-def all_companies(db:Session=Depends(get_db)):
+def all_positions(db:Session=Depends(get_db)):
     positions = db.execute('''
         SELECT Position 
         FROM Connections
