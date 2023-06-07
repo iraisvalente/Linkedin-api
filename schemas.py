@@ -25,14 +25,14 @@ class Connection(BaseModel):
 
 class Position(BaseModel): 
     Position: str
-    Count: str
+    Count: Optional[str]
     
     class Config: 
         orm_mode =True
         
 class Company(BaseModel): 
     Company: str
-    Count: str
+    Count: Optional[str]
     
     class Config: 
         orm_mode =True

@@ -19,3 +19,4 @@ class Connection(Base):
     Company = Column(String(255))
     Position = Column(String(255))
     Connection = Column(String(255))
+        

@@ -114,3 +114,27 @@ def common_companies(db:Session=Depends(get_db)):
         DESC LIMIT  5
     ''')
     return connections.all()
+
+@app.get('/company_positions/{company}',response_model=List[schemas.Position])
+def common_companies(company: str, db:Session=Depends(get_db)):
+    positions = db.execute('''
+        SELECT Position, COUNT(*) AS Count
+        FROM Connections where Company = '''+company+''' GROUP BY Position;
+    ''')
+    return positions.all()
+
+@app.get('/all_companies/',response_model=List[schemas.Company])
+def all_companies(db:Session=Depends(get_db)):
+    companies = db.execute('''
+        SELECT Company 
+        FROM Connections
+    ''')
+    return companies.all()
+
+@app.get('/all_positions/',response_model=List[schemas.Position])
+def all_companies(db:Session=Depends(get_db)):
+    positions = db.execute('''
+        SELECT Position 
+        FROM Connections
+    ''')
+    return positions.all()
