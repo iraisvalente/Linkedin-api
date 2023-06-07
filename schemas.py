@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 from pydantic import BaseModel
 
 class User(BaseModel): 
@@ -43,3 +43,7 @@ class CommonConnection(BaseModel):
     
     class Config: 
         orm_mode =True
+
+class Analytics(BaseModel):
+    Company: str
+    Positions: List[Position]

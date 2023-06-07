@@ -116,7 +116,7 @@ def common_companies(db:Session=Depends(get_db)):
     return connections.all()
 
 @app.get('/company_positions/{company}',response_model=List[schemas.Position])
-def common_companies(company: str, db:Session=Depends(get_db)):
+def individual_company_positions(company: str, db:Session=Depends(get_db)):
     positions = db.execute('''
         SELECT Position, COUNT(*) AS Count
         FROM Connections where Company = '''+company+''' GROUP BY Position;
@@ -138,3 +138,30 @@ def all_positions(db:Session=Depends(get_db)):
         FROM Connections
     ''')
     return positions.all()
+
+@app.get('/company_positions/')
+def company_positions(db:Session=Depends(get_db)):
+    results = db.execute('SELECT Company, Position, COUNT(*) AS Position_Count FROM Connections GROUP BY Company, Position ORDER BY Company ASC').all()
+
+    companies = []
+    current_company = None
+    for row in results:
+        if row[0] != current_company:        
+            current_company = row[0]
+            company = {
+                "Company": current_company,
+                "Positions": []
+            }
+            if current_company:
+                companies.append(company)
+
+        position = {
+            "Position": row[1],
+            "Count": str(row[2])
+        }
+        company["Positions"].append(position)
+
+    if current_company:
+        companies.append(company)
+
+    return companies
