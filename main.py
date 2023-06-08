@@ -100,28 +100,81 @@ def common_companies(db:Session=Depends(get_db)):
 
 @app.get('/company_positions/{company}',response_model=List[schemas.Position])
 def individual_company_positions(company: str, db:Session=Depends(get_db)):
-    positions = db.execute(text("SELECT Position, COUNT(*) AS Count FROM Connections where Company = '''+company+''' GROUP BY Position;"    ))
+    positions = db.execute(text("SELECT Position, COUNT(*) AS Count FROM Connections where Company = "+company+"GROUP BY Position;"    ))
     return positions.all()
 
 @app.get('/all_companies/',response_model=List[schemas.Company])
 def all_companies(db:Session=Depends(get_db)):
     companies = db.execute(text('''
-        SELECT Company 
+        SELECT DISTINCT Company 
         FROM Connections
     '''))
     return companies.all()
 
 @app.get('/all_positions/',response_model=List[schemas.Position])
-def all_positions(db:Session=Depends(get_db)):
+def all_positions(db: Session = Depends(get_db)):
     positions = db.execute(text('''
-        SELECT Position 
+        SELECT DISTINCT Position
         FROM Connections
-    '''))
-    return positions.all()
+        ORDER BY Position ASC
+    ''')).all()
+    return positions
+
+'''
+@app.get('/company_positions/')
+def company_positions(db:Session=Depends(get_db)):
+    results = db.execute(text(
+        SELECT c1.Company, p.Position, COUNT(c2.Position) AS Count
+        FROM (
+            SELECT DISTINCT Company
+            FROM Connections
+        ) AS c1
+        CROSS JOIN (
+            SELECT DISTINCT Position
+            FROM Connections
+        ) AS p
+        LEFT JOIN Connections AS c2
+            ON c1.Company = c2.Company AND p.Position = c2.Position
+        GROUP BY c1.Company, p.Position
+        ORDER BY c1.Company ASC, p.Position ASC;                          
+    )).all()
+
+    companies = []
+    current_company = None
+    
+    for row in results:
+        if row[0] != current_company:        
+            current_company = row[0]
+            company = {
+                "Company": current_company,
+                "Positions": []
+            }
+            if current_company:
+                companies.append(company)
+                
+        position = {
+            "Position": row[1],
+            "Count": str(row[2])
+        }   
+        company["Positions"].append(position)        
+
+    if current_company:
+        companies.append(company)
+        
+    companies.pop()
+    
+    return companies
+'''
 
 @app.get('/company_positions/')
 def company_positions(db:Session=Depends(get_db)):
-    results = db.execute('SELECT Company, Position, COUNT(*) AS Position_Count FROM Connections GROUP BY Company, Position ORDER BY Company ASC').all()
+    results = db.execute(text('''
+            SELECT Company, 
+            Position, COUNT(*) AS Position_Count 
+            FROM Connections 
+            GROUP BY Company, Position 
+            ORDER BY Company ASC
+        ''')).all()
 
     companies = []
     current_company = None
@@ -143,5 +196,29 @@ def company_positions(db:Session=Depends(get_db)):
 
     if current_company:
         companies.append(company)
+    
+    companies.pop()
 
     return companies
+
+
+@app.get('/unique_names/',response_model=schemas.Count)
+def all_positions(db: Session = Depends(get_db)):
+    query = text('SELECT COUNT(DISTINCT First_Name) as count FROM Connections')
+    result = db.execute(query)
+    count = result.scalar()
+    return {'Count': count}
+
+@app.get('/unique_companies/',response_model=schemas.Count)
+def all_positions(db: Session = Depends(get_db)):
+    query = text('SELECT COUNT(DISTINCT Company) FROM Connections')
+    result = db.execute(query)
+    count = result.scalar()
+    return {'Count': count}
+
+@app.get('/unique_positions/',response_model=schemas.Count)
+def all_positions(db: Session = Depends(get_db)):
+    query = text('SELECT COUNT(DISTINCT Position) FROM Connections;')
+    result = db.execute(query)
+    count = result.scalar()
+    return {'Count': count}

@@ -47,3 +47,9 @@ class CommonConnection(BaseModel):
 class Analytics(BaseModel):
     Company: str
     Positions: List[Position]
+    
+class Count(BaseModel):
+    Count: int
+    
+    class Config:
+        orm_mode = True
