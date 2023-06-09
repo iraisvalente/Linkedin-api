@@ -18,7 +18,7 @@ class Connection(BaseModel):
     Email_Address: str
     Company: str
     Position: str
-    Connection: str
+    Connection: Optional[str]
     
     class Config: 
         orm_mode =True

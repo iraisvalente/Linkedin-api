@@ -120,51 +120,13 @@ def all_positions(db: Session = Depends(get_db)):
     ''')).all()
     return positions
 
-'''
-@app.get('/company_positions/')
-def company_positions(db:Session=Depends(get_db)):
-    results = db.execute(text(
-        SELECT c1.Company, p.Position, COUNT(c2.Position) AS Count
-        FROM (
-            SELECT DISTINCT Company
-            FROM Connections
-        ) AS c1
-        CROSS JOIN (
-            SELECT DISTINCT Position
-            FROM Connections
-        ) AS p
-        LEFT JOIN Connections AS c2
-            ON c1.Company = c2.Company AND p.Position = c2.Position
-        GROUP BY c1.Company, p.Position
-        ORDER BY c1.Company ASC, p.Position ASC;                          
-    )).all()
-
-    companies = []
-    current_company = None
+@app.get('/user_connections/{connection}',response_model=List[schemas.Connection])
+def company_positions(connection: str, db:Session=Depends(get_db)):
+    connections = db.execute(text('''
+        SELECT First_Name, Last_Name, Email_Address, Company, Position FROM Connections WHERE Connection =  '''+connection+'''                       
+    ''')).all()  
     
-    for row in results:
-        if row[0] != current_company:        
-            current_company = row[0]
-            company = {
-                "Company": current_company,
-                "Positions": []
-            }
-            if current_company:
-                companies.append(company)
-                
-        position = {
-            "Position": row[1],
-            "Count": str(row[2])
-        }   
-        company["Positions"].append(position)        
-
-    if current_company:
-        companies.append(company)
-        
-    companies.pop()
-    
-    return companies
-'''
+    return connections
 
 @app.get('/company_positions/')
 def company_positions(db:Session=Depends(get_db)):
