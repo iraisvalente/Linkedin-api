@@ -128,6 +128,15 @@ def company_positions(connection: str, db:Session=Depends(get_db)):
     
     return connections
 
+@app.get('/connections/{company}/{position}',response_model=List[schemas.Connection])
+def company_positions(company: str, position: str,db:Session=Depends(get_db)):
+    connections = db.execute(text('''
+        SELECT * FROM Connections 
+        WHERE Company =  '''+company+''' AND Position =  '''+position+'''                       
+    ''')).all()  
+    
+    return connections
+
 @app.get('/company_positions/')
 def company_positions(db:Session=Depends(get_db)):
     results = db.execute(text('''
