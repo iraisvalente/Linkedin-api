@@ -121,7 +121,7 @@ def all_positions(db: Session = Depends(get_db)):
     return positions
 
 @app.get('/user_connections/{connection}',response_model=List[schemas.Connection])
-def company_positions(connection: str, db:Session=Depends(get_db)):
+def user_connections(connection: str, db:Session=Depends(get_db)):
     connections = db.execute(text('''
         SELECT First_Name, Last_Name, Email_Address, Company, Position FROM Connections WHERE Connection =  '''+connection+'''                       
     ''')).all()  
@@ -174,22 +174,32 @@ def company_positions(db:Session=Depends(get_db)):
 
 
 @app.get('/unique_names/',response_model=schemas.Count)
-def all_positions(db: Session = Depends(get_db)):
+def unique_names(db: Session = Depends(get_db)):
     query = text('SELECT COUNT(DISTINCT First_Name) as count FROM Connections')
     result = db.execute(query)
     count = result.scalar()
     return {'Count': count}
 
 @app.get('/unique_companies/',response_model=schemas.Count)
-def all_positions(db: Session = Depends(get_db)):
+def unique_companies(db: Session = Depends(get_db)):
     query = text('SELECT COUNT(DISTINCT Company) FROM Connections')
     result = db.execute(query)
     count = result.scalar()
     return {'Count': count}
 
 @app.get('/unique_positions/',response_model=schemas.Count)
-def all_positions(db: Session = Depends(get_db)):
+def unique_positions(db: Session = Depends(get_db)):
     query = text('SELECT COUNT(DISTINCT Position) FROM Connections;')
     result = db.execute(query)
     count = result.scalar()
     return {'Count': count}
+
+@app.get('/last_connections_added/', response_model=List[schemas.Connection])
+def last_connections_added(db: Session = Depends(get_db)):
+    query = text('''SELECT *
+            FROM Connections
+            ORDER BY Upload_Date DESC
+            LIMIT 30
+        ''')
+    result = db.execute(query).all()
+    return result
