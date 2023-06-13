@@ -16,5 +16,6 @@ CREATE TABLE Connections(
     Email_Address varchar(255),
     Company varchar(255),
     Position varchar(255),
-    Connection varchar(255)
+    Connection varchar(255),
+    Upload_Date datetime default current_timestamp
 );
