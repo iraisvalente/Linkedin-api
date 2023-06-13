@@ -210,6 +210,7 @@ def connection_independent_search(connection: schemas.Connection, db: Session = 
         SELECT * FROM Connections 
         WHERE (First_Name = :first_name OR First_Name LIKE :first_name) 
         OR (Last_Name = :last_name OR Last_Name LIKE :last_name) 
+        OR (Email_Address = :email_address OR Last_Name LIKE :email_address) 
         OR (Company = :company OR Company LIKE :company) 
         OR (Position = :position OR Position LIKE :position) 
         OR (Connection = :connection OR Connection LIKE :connection) 
@@ -218,10 +219,35 @@ def connection_independent_search(connection: schemas.Connection, db: Session = 
     parameters = {
         'first_name': connection.First_Name if connection.First_Name != "" else "",
         'last_name': connection.Last_Name if connection.Last_Name != "" else "",
+        'email_address': connection.Email_Address if connection.Email_Address != "" else "",
         'company': connection.Company if connection.Company != "" else "",
         'position': connection.Position if connection.Position != "" else "",
         'connection': connection.Connection if connection.Connection != "" else "",
     }
 
+    result = db.execute(query, parameters).all()
+    return result
+
+@app.post('/connection_dependent_search/', response_model=List[schemas.Connection])
+def connection_dependent_search(connection: schemas.Connection, db: Session = Depends(get_db)):
+    query = text('''
+        SELECT * FROM Connections 
+        WHERE First_Name LIKE :first_name
+        AND Last_Name LIKE :last_name
+        AND Email_Address LIKE :email_address
+        AND Company LIKE :company
+        AND Position LIKE :position
+        AND Connection LIKE :connection
+    ''')
+
+    parameters = {
+        'first_name': f"%{connection.First_Name}%",
+        'last_name': f"%{connection.Last_Name}%",
+        'email_address': f"%{connection.Email_Address}%",
+        'company': f"%{connection.Company}%",
+        'position': f"%{connection.Position}%",
+        'connection': f"%{connection.Connection}%",
+    }
+    
     result = db.execute(query, parameters).all()
     return result
