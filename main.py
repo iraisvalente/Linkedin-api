@@ -133,7 +133,7 @@ def user_connections(connection: str, db:Session=Depends(get_db)):
 def company_positions(company: str, db:Session=Depends(get_db)):
     connections = db.execute(text('''
         SELECT * FROM Connections 
-        WHERE Company LIKE '''+company+'''                  
+        WHERE Company LIKE "%'''+company+'''%"                  
     ''')).all()  
     
     return connections
@@ -252,3 +252,14 @@ def connection_dependent_search(connection: schemas.Connection, db: Session = De
     
     result = db.execute(query, parameters).all()
     return result
+
+@app.post('/connections/bard_connection/', response_model=schemas.Connection)
+def bard_connection(connection: schemas.Connection, db:Session=Depends(get_db)):
+    positions = db.execute(text(
+        '''SELECT * FROM Connections 
+            WHERE Company LIKE "%'''+connection.Company+'''%" 
+            AND First_Name LIKE "%'''+connection.First_Name+'''%" 
+            AND Last_Name LIKE "%'''+connection.Last_Name+'%"')).first()
+    if positions is None:
+        return {}
+    return positions
