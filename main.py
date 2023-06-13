@@ -196,10 +196,11 @@ def unique_positions(db: Session = Depends(get_db)):
 
 @app.get('/last_connections_added/', response_model=List[schemas.Connection])
 def last_connections_added(db: Session = Depends(get_db)):
-    query = text('''SELECT *
+    query = text('''
+            SELECT *
             FROM Connections
+            WHERE Upload_Date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
             ORDER BY Upload_Date DESC
-            LIMIT 30
         ''')
     result = db.execute(query).all()
     return result
