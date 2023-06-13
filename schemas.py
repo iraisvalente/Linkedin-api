@@ -13,11 +13,11 @@ class User(BaseModel):
         orm_mode =True
     
 class Connection(BaseModel): 
-    First_Name: str
-    Last_Name: str
-    Email_Address: str
-    Company: str
-    Position: str
+    First_Name: Optional[str]
+    Last_Name: Optional[str]
+    Email_Address: Optional[str]
+    Company: Optional[str]
+    Position: Optional[str]
     Connection: Optional[str]
     
     class Config: 

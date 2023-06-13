@@ -100,7 +100,7 @@ def common_companies(db:Session=Depends(get_db)):
 
 @app.get('/company_positions/{company}',response_model=List[schemas.Position])
 def individual_company_positions(company: str, db:Session=Depends(get_db)):
-    positions = db.execute(text("SELECT Position, COUNT(*) AS Count FROM Connections where Company = "+company+"GROUP BY Position;"    ))
+    positions = db.execute(text('''SELECT Position, COUNT(*) AS Count FROM Connections where Company LIKE "%'''+company+'''%" GROUP BY Position'''))
     return positions.all()
 
 @app.get('/all_companies/',response_model=List[schemas.Company])
@@ -123,16 +123,16 @@ def all_positions(db: Session = Depends(get_db)):
 @app.get('/user_connections/{connection}',response_model=List[schemas.Connection])
 def user_connections(connection: str, db:Session=Depends(get_db)):
     connections = db.execute(text('''
-        SELECT First_Name, Last_Name, Email_Address, Company, Position FROM Connections WHERE Connection =  '''+connection+'''                       
+        SELECT First_Name, Last_Name, Email_Address, Company, Position FROM Connections WHERE Connection LIKE "%'''+connection+'''%"                  
     ''')).all()  
     
     return connections
 
-@app.get('/connections/{company}/{position}',response_model=List[schemas.Connection])
-def company_positions(company: str, position: str,db:Session=Depends(get_db)):
+@app.get('/connections/{company}',response_model=List[schemas.Connection])
+def company_positions(company: str, db:Session=Depends(get_db)):
     connections = db.execute(text('''
         SELECT * FROM Connections 
-        WHERE Company =  '''+company+''' AND Position =  '''+position+'''                       
+        WHERE Company LIKE "%'''+company+'''%"                  
     ''')).all()  
     
     return connections
@@ -200,7 +200,28 @@ def last_connections_added(db: Session = Depends(get_db)):
             SELECT *
             FROM Connections
             WHERE Upload_Date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
-            ORDER BY Upload_Date DESC
         ''')
     result = db.execute(query).all()
+    return result
+
+@app.post('/connection_independent_search/', response_model=List[schemas.Connection])
+def connection_independent_search(connection: schemas.Connection, db: Session = Depends(get_db)):
+    query = text('''
+        SELECT * FROM Connections 
+        WHERE (First_Name = :first_name OR First_Name LIKE :first_name) 
+        OR (Last_Name = :last_name OR Last_Name LIKE :last_name) 
+        OR (Company = :company OR Company LIKE :company) 
+        OR (Position = :position OR Position LIKE :position) 
+        OR (Connection = :connection OR Connection LIKE :connection) 
+    ''')
+
+    parameters = {
+        'first_name': connection.First_Name if connection.First_Name != "" else "",
+        'last_name': connection.Last_Name if connection.Last_Name != "" else "",
+        'company': connection.Company if connection.Company != "" else "",
+        'position': connection.Position if connection.Position != "" else "",
+        'connection': connection.Connection if connection.Connection != "" else "",
+    }
+
+    result = db.execute(query, parameters).all()
     return result
