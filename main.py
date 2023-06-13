@@ -132,7 +132,7 @@ def user_connections(connection: str, db:Session=Depends(get_db)):
 def company_positions(company: str, db:Session=Depends(get_db)):
     connections = db.execute(text('''
         SELECT * FROM Connections 
-        WHERE Company LIKE "%'''+company+'''%"                  
+        WHERE Company LIKE '''+company+'''                  
     ''')).all()  
     
     return connections
