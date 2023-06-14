@@ -257,8 +257,7 @@ def connection_dependent_search(connection: schemas.Connection, db: Session = De
 def bard_connection(connection: schemas.Connection, db:Session=Depends(get_db)):
     positions = db.execute(text(
         '''SELECT * FROM Connections 
-            WHERE Company LIKE "%'''+connection.Company+'''%" 
-            AND First_Name LIKE "%'''+connection.First_Name+'''%" 
+            WHERE First_Name LIKE "%'''+connection.First_Name+'''%" 
             AND Last_Name LIKE "%'''+connection.Last_Name+'%"')).first()
     if positions is None:
         return {}
