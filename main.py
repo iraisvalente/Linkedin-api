@@ -146,7 +146,6 @@ def all_positions(db: Session = Depends(get_db)):
 
 @app.get('/user_connections/{connection}',response_model=List[schemas.Connection])
 def user_connections(connection: str, db:Session=Depends(get_db)):
-    print(connection)
     connections = db.execute(text('''
         SELECT First_Name, Last_Name, Email_Address, Company, Position FROM Connections WHERE Connection LIKE "%'''+connection+'''%"                  
     ''')).all()  
@@ -157,9 +156,8 @@ def user_connections(connection: str, db:Session=Depends(get_db)):
 def company_positions(company: str, db:Session=Depends(get_db)):
     connections = db.execute(text('''
         SELECT * FROM Connections 
-        WHERE Company LIKE "%'''+company+'''%"                  
+        WHERE Company LIKE "'''+company+'''"                  
     ''')).all()  
-    
     return connections
 
 @app.get('/company_positions/')
