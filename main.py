@@ -85,17 +85,41 @@ def show_connections_all_filters(entrada:schemas.Connection, db:Session=Depends(
 
 @app.get('/common_positions/',response_model=List[schemas.Position])
 def common_positions(db:Session=Depends(get_db)):
-    positions = db.execute(text("SELECT Position, COUNT(*) as Count FROM Connections GROUP BY Position ORDER BY COUNT(Position) DESC LIMIT 5"))
+    positions = db.execute(text(
+        '''
+            SELECT Position, COUNT(*) AS Count
+            FROM Connections
+            WHERE Position <> 'NaN'
+            GROUP BY Position
+            ORDER BY Count DESC
+            LIMIT 5;
+        '''))
     return positions.all()
 
 @app.get('/common_companies/',response_model=List[schemas.Company])
 def common_companies(db:Session=Depends(get_db)):
-    companies = db.execute(text("SELECT Company, COUNT(*) as Count FROM Connections GROUP BY Company ORDER BY COUNT(Company) DESC LIMIT 5"))
+    companies = db.execute(text(
+        '''
+            SELECT Company, COUNT(*) as Count 
+            FROM Connections 
+            WHERE Company <> 'NaN'
+            GROUP BY Company 
+            ORDER BY COUNT(Company) 
+            DESC LIMIT 5;
+        '''))
     return companies.all()
 
 @app.get('/common_connections/',response_model=List[schemas.CommonConnection])
 def common_companies(db:Session=Depends(get_db)):
-    connections = db.execute(text("SELECT Connection,COUNT(*) as Count FROM Connections GROUP BY Connection ORDER BY COUNT(Connection) DESC LIMIT 5"))
+    connections = db.execute(text(
+        '''
+        SELECT Connection, COUNT(*) as Count 
+        FROM Connections 
+        WHERE Connection <> 'NaN'
+        GROUP BY Connection 
+        ORDER BY COUNT(Connection) 
+        DESC LIMIT 5
+        '''))
     return connections.all()
 
 @app.get('/company_positions/{company}',response_model=List[schemas.Position])
