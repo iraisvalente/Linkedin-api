@@ -6,6 +6,7 @@ import models,schemas
 from connection import SessionLocal, engine
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import text
+from scripts.bard import bard
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -284,3 +285,9 @@ def bard_connection(connection: schemas.Connection, db:Session=Depends(get_db)):
     if positions is None:
         return {}
     return positions
+
+@app.post('/bard/ask/')
+def bard_ask(ask: schemas.Bard):
+    if len(ask.company)==0 or len(ask.position)==0:
+        return {"answer": "Need company and position"}
+    return bard(ask.company, ask.position)

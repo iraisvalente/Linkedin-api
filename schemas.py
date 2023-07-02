@@ -53,3 +53,10 @@ class Count(BaseModel):
     
     class Config:
         orm_mode = True
+
+class Bard(BaseModel):
+    company: str
+    position: str
+    
+    class Config:
+        orm_mode = True
