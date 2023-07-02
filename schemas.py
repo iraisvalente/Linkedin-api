@@ -60,3 +60,11 @@ class Bard(BaseModel):
     
     class Config:
         orm_mode = True
+        
+class Linked(BaseModel):
+    username: str
+    password: Optional[str]
+    
+    class Config:
+        orm_mode = True
+        

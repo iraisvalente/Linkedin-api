@@ -1,5 +1,5 @@
 from typing import List
-from fastapi import FastAPI
+from fastapi import FastAPI, File, UploadFile
 from fastapi.params import Depends
 from fastapi.middleware.cors import CORSMiddleware
 import models,schemas
@@ -7,6 +7,7 @@ from connection import SessionLocal, engine
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import text
 from scripts.bard import bard
+from scripts.linked import choice, download, extract, append, copy
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -291,3 +292,25 @@ def bard_ask(ask: schemas.Bard):
     if len(ask.company)==0 or len(ask.position)==0:
         return {"answer": "Need company and position"}
     return bard(ask.company, ask.position)
+
+@app.post('/linked/choice/')
+def linked_choice(linked: schemas.Linked):
+    if len(linked.username)==0 or len(linked.password)==0:
+        return {"result": "User or password not defined"}
+    return choice(linked.username, linked.password)
+
+@app.post('/linked/download/')
+def linked_download(linked: schemas.Linked):
+    if len(linked.username)==0 or len(linked.password)==0:
+        return {"result": "User or password not defined"}
+    return download(linked.username, linked.password)
+
+@app.get('/linked/extract/')
+def linked_extract():
+    return extract()
+
+@app.post('/linked/append/')
+def linked_append(linked: schemas.Linked):
+    if len(linked.username)==0:
+        return {"result": "You need to send the mail connection"}
+    return append(linked.username)

@@ -44,8 +44,6 @@ os.makedirs(unzip_path, exist_ok=True)
 #cur.execute("CREATE TABLE if not exists linkedin(First_Name TEXT,Last_Name TEXT ,Email_Address TEXT,Company TEXT,Position TEXT)")
 
 def choice(user,passwd):
-    assert user, "User is not defined"
-    assert passwd,"Password not defined" 
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
     driver.get("https://www.linkedin.com/")
     sleep(10)
@@ -66,6 +64,7 @@ def choice(user,passwd):
     search_bar=driver.find_element(By.XPATH,'/html/body/div/form/fieldset/span/button').click()
     sleep(5)
     driver.close()
+    return {"result": "Done"}
     
 def download(user,passwd):
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
@@ -83,9 +82,9 @@ def download(user,passwd):
     driver.switch_to.frame(0)
     search_bar=driver.find_element(By.XPATH,'/html/body/div/form/fieldset/span/button').click()
     sleep(30)
+    return {"result": "Downloaded"}
 
 def extract():
-    print(downloads)
     file_list=os.listdir(downloads)
     for file in file_list:
         if file.endswith(".zip"):
@@ -94,7 +93,7 @@ def extract():
                 with zipfile.ZipFile(f"{downloads}\\{file}", 'r') as unzipper:
                     unzipper.extractall(f"{unzip_path}\\{file.split('.zip')[0]}")
                     print(f"Copied to {unzip_path}\\{file.split('.zip')[0]}")
-
+    return {"result": "Extracted"}    
 
 def append(connection):
     print("append")
@@ -131,11 +130,9 @@ def append(connection):
                         print("Error Ocurrs")
                 cur.close()
     cnx.commit()
-    print("commited")
+    return {"result": "Data base saved"}                         
 
-                        
-
-def Copy(src):
+def copy(src):
     print("Copy")
     name=src.split("\\")[-1]
     print(name)
@@ -143,7 +140,7 @@ def Copy(src):
     shutil.copyfile(src,f"{unzip_path}\\{name}")
     print(f"Copied to {unzip_path}")
     
-    
+'''    
 if '__main__':
     print("on main")
     if len(sys.argv) == 1:
@@ -200,3 +197,4 @@ if '__main__':
             Copy(connection)
     else:
         print("Action not defined")
+'''
