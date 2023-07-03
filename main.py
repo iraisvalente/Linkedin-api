@@ -7,7 +7,10 @@ from connection import SessionLocal, engine
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import text
 from scripts.bard import bard
-from scripts.linked import choice, download, extract, append, copy
+from scripts.linked import choice, download, extract, append
+import os
+import pathlib
+import shutil
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -314,3 +317,17 @@ def linked_append(linked: schemas.Linked):
     if len(linked.username)==0:
         return {"result": "You need to send the mail connection"}
     return append(linked.username)
+
+@app.post("/linked/copy/")
+async def linked_copy(file: UploadFile = File(...)):
+    ROOT_DIR = pathlib.Path().resolve()
+    ROOT_DIR = f"{ROOT_DIR}\\LinkedIn"
+    home = str(pathlib.Path.home())
+    unzip_path = os.path.join(ROOT_DIR, "unzip")
+    
+    file_path = os.path.join(unzip_path, file.filename)
+    
+    with open(file_path, "wb") as dest_file:
+        shutil.copyfileobj(file.file, dest_file)
+    
+    return {"filename": file.filename}

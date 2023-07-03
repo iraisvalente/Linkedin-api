@@ -140,7 +140,7 @@ def copy(src):
     shutil.copyfile(src,f"{unzip_path}\\{name}")
     print(f"Copied to {unzip_path}")
     
-'''    
+
 if '__main__':
     print("on main")
     if len(sys.argv) == 1:
@@ -194,7 +194,6 @@ if '__main__':
             print("You need to send the file to copy")
         else:
             print("trying to copy")
-            Copy(connection)
+            copy(connection)
     else:
         print("Action not defined")
-'''
