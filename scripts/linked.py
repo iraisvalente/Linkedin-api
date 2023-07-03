@@ -132,6 +132,7 @@ def append(connection):
     cnx.commit()
     return {"result": "Data base saved"}                         
 
+'''
 def copy(src):
     print("Copy")
     name=src.split("\\")[-1]
@@ -197,3 +198,4 @@ if '__main__':
             copy(connection)
     else:
         print("Action not defined")
+'''

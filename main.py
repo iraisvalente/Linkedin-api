@@ -8,9 +8,9 @@ from sqlalchemy.orm import Session
 from sqlalchemy.sql import text
 from scripts.bard import bard
 from scripts.linked import choice, download, extract, append
-import os
+from datetime import datetime
 import pathlib
-import shutil
+import os
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -319,15 +319,29 @@ def linked_append(linked: schemas.Linked):
     return append(linked.username)
 
 @app.post("/linked/copy/")
-async def linked_copy(file: UploadFile = File(...)):
-    ROOT_DIR = pathlib.Path().resolve()
-    ROOT_DIR = f"{ROOT_DIR}\\LinkedIn"
-    home = str(pathlib.Path.home())
-    unzip_path = os.path.join(ROOT_DIR, "unzip")
-    
-    file_path = os.path.join(unzip_path, file.filename)
-    
-    with open(file_path, "wb") as dest_file:
-        shutil.copyfileobj(file.file, dest_file)
-    
-    return {"filename": file.filename}
+def linked_copy(file_request: schemas.FileRequest):
+    try: 
+        ROOT_DIR = pathlib.Path().resolve()
+        unzip_path = os.path.join(f"{ROOT_DIR}\\LinkedIn", "unzip")
+        now = datetime.now()
+        name_format = now.strftime("%m-%d-%Y")
+        folder_name = f"Basic_LinkedInDataExport_{name_format}"
+        
+        if not os.path.exists(os.path.join(unzip_path, folder_name)):
+            new_folder_name = folder_name
+        else:
+            version = 1
+            while os.path.exists(os.path.join(unzip_path, f"{folder_name} ({version})")):
+                version += 1
+            new_folder_name = f"{folder_name} ({version})"
+        
+        os.makedirs(os.path.join(unzip_path, new_folder_name))
+        file_path = os.path.join(unzip_path, new_folder_name, f"{file_request.name}.csv")
+        
+        with open(file_path, 'w') as out:
+            out.write(file_request.content)
+        append(file_request.email)
+        
+        return {"result": "Copied"}
+    except Exception as e:
+        return {"result": "Error at copying"}

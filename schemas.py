@@ -68,3 +68,11 @@ class Linked(BaseModel):
     class Config:
         orm_mode = True
         
+class FileRequest(BaseModel):
+    name: str
+    content: str
+    email: str
+    
+    class Config:
+        orm_mode = True
+        
