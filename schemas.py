@@ -22,15 +22,21 @@ class Connection(BaseModel):
     
     class Config: 
         orm_mode =True
+        
+class Position(BaseModel):
+    Position: str
 
-class Position(BaseModel): 
+    class Config:
+        orm_mode = True
+
+class PositionCount(BaseModel): 
     Position: str
     Count: Optional[str]
     
     class Config: 
         orm_mode =True
         
-class Company(BaseModel): 
+class CompanyCount(BaseModel): 
     Company: str
     Count: Optional[str]
     
@@ -46,7 +52,7 @@ class CommonConnection(BaseModel):
 
 class Analytics(BaseModel):
     Company: str
-    Positions: List[Position]
+    Positions: List[PositionCount]
     
 class Count(BaseModel):
     Count: int
@@ -75,4 +81,3 @@ class FileRequest(BaseModel):
     
     class Config:
         orm_mode = True
-        

@@ -1,8 +1,8 @@
 from typing import List
-from fastapi import FastAPI, File, UploadFile
+from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.params import Depends
 from fastapi.middleware.cors import CORSMiddleware
-import models,schemas
+import models, schemas
 from connection import SessionLocal, engine
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import text
@@ -88,7 +88,7 @@ def show_connections_all_filters(entrada:schemas.Connection, db:Session=Depends(
     connections = db.query(models.Connection).filter_by(First_Name=entrada.First_Name, Last_Name=entrada.Last_Name, Email_Address=entrada.Email_Address, Company=entrada.Company, Position=entrada.Position, Connection=entrada.Connection).all()
     return connections
 
-@app.get('/common_positions/',response_model=List[schemas.Position])
+@app.get('/common_positions/',response_model=List[schemas.PositionCount])
 def common_positions(db:Session=Depends(get_db)):
     positions = db.execute(text(
         '''
@@ -101,7 +101,7 @@ def common_positions(db:Session=Depends(get_db)):
         '''))
     return positions.all()
 
-@app.get('/common_companies/',response_model=List[schemas.Company])
+@app.get('/common_companies/',response_model=List[schemas.CompanyCount])
 def common_companies(db:Session=Depends(get_db)):
     companies = db.execute(text(
         '''
@@ -127,12 +127,12 @@ def common_companies(db:Session=Depends(get_db)):
         '''))
     return connections.all()
 
-@app.get('/company_positions/{company}',response_model=List[schemas.Position])
+@app.get('/company_positions/{company}',response_model=List[schemas.PositionCount])
 def individual_company_positions(company: str, db:Session=Depends(get_db)):
     positions = db.execute(text('''SELECT Position, COUNT(*) AS Count FROM Connections where Company LIKE '''+company+''' GROUP BY Position'''))
     return positions.all()
 
-@app.get('/all_companies/',response_model=List[schemas.Company])
+@app.get('/all_companies/',response_model=List[schemas.CompanyCount])
 def all_companies(db:Session=Depends(get_db)):
     companies = db.execute(text('''
         SELECT DISTINCT Company 
@@ -140,7 +140,7 @@ def all_companies(db:Session=Depends(get_db)):
     '''))
     return companies.all()
 
-@app.get('/all_positions/',response_model=List[schemas.Position])
+@app.get('/all_positions/',response_model=List[schemas.PositionCount])
 def all_positions(db: Session = Depends(get_db)):
     positions = db.execute(text('''
         SELECT DISTINCT Position
@@ -344,4 +344,22 @@ def linked_copy(file_request: schemas.FileRequest):
         
         return {"result": "Copied"}
     except Exception as e:
-        return {"result": "Error at copying"}
+        return {"result": "Error at copying"}    
+
+@app.post('/search/position/', response_model=schemas.Position)
+def create_position(position: schemas.Position, db: Session = Depends(get_db)):
+    new_position = models.Position(Position=position.Position)
+    db.add(new_position)
+    db.commit()
+    db.refresh(new_position)
+    return new_position
+
+@app.delete('/search/position/{position_id}')
+def delete_position(position_id: int, db: Session = Depends(get_db)):
+    position = db.query(models.Position).get(position_id)
+    if position:
+        db.delete(position)
+        db.commit()
+        return {'message': 'Position deleted successfully'}
+    else:
+        raise HTTPException(status_code=404, detail='Position not found')

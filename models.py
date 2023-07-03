@@ -19,4 +19,9 @@ class Connection(Base):
     Company = Column(String(255))
     Position = Column(String(255))
     Connection = Column(String(255))
-        
+
+class Position(Base):
+    __tablename__ = 'Positions'
+     
+    Id = Column(Integer, primary_key=True, autoincrement=True)
+    Position = Column(String(255))
