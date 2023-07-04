@@ -1,5 +1,5 @@
 from typing import List, Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 class User(BaseModel): 
     First_Name: str
@@ -81,3 +81,14 @@ class FileRequest(BaseModel):
     
     class Config:
         orm_mode = True
+
+class Search(BaseModel):
+    Name: str
+    Note: str
+    Search: bool 
+    Connection_first_name: str
+    Connection_last_name: str
+    Connection_email: str
+    Connection_company: str
+    Connection_position: str
+    Connection_connection: str

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, Boolean
 from connection import Base
 
 class User(Base):
@@ -25,3 +25,17 @@ class Position(Base):
      
     Id = Column(Integer, primary_key=True, autoincrement=True)
     Position = Column(String(255))
+
+class Search(Base):
+    __tablename__ = 'Searches'
+
+    Id = Column(Integer, primary_key=True, autoincrement=True)
+    Name = Column(String(255))
+    Note = Column(String(255))
+    Search = Column(Boolean)
+    Connection_first_name = Column(String(255))
+    Connection_last_name = Column(String(255))
+    Connection_email = Column(String(255))
+    Connection_company = Column(String(255))
+    Connection_position = Column(String(255))
+    Connection_connection = Column(String(255))

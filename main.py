@@ -346,13 +346,13 @@ def linked_copy(file_request: schemas.FileRequest):
     except Exception as e:
         return {"result": "Error at copying"}    
 
-@app.post('/search/position/', response_model=schemas.Position)
+@app.post('/search/position/')
 def create_position(position: schemas.Position, db: Session = Depends(get_db)):
     new_position = models.Position(Position=position.Position)
     db.add(new_position)
     db.commit()
     db.refresh(new_position)
-    return new_position
+    return {'message': 'Position added successfully'}
 
 @app.delete('/search/position/{position_id}')
 def delete_position(position_id: int, db: Session = Depends(get_db)):
@@ -363,3 +363,31 @@ def delete_position(position_id: int, db: Session = Depends(get_db)):
         return {'message': 'Position deleted successfully'}
     else:
         raise HTTPException(status_code=404, detail='Position not found')
+    
+@app.post('/search/save_search')
+def create_search(search: schemas.Search, db: Session = Depends(get_db)):
+    new_search = models.Search(
+        Name=search.Name,
+        Note=search.Note,
+        Search=search.Search,
+        Connection_first_name=search.Connection_first_name,
+        Connection_last_name=search.Connection_last_name,
+        Connection_email=search.Connection_email,
+        Connection_company=search.Connection_company,
+        Connection_position=search.Connection_position,
+        Connection_connection=search.Connection_connection
+    )
+    db.add(new_search)
+    db.commit()
+    db.refresh(new_search)
+    return {'message': 'Search added successfully'}
+
+@app.delete('/search/save_search/{search_id}')
+def delete_search(search_id: int, db: Session = Depends(get_db)):
+    search = db.query(models.Search).get(search_id)
+    if search:
+        db.delete(search)
+        db.commit()
+        return {'message': 'Position deleted successfully'}
+    else:
+        raise HTTPException(status_code=404, detail='Search not found')
