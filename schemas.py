@@ -24,6 +24,7 @@ class Connection(BaseModel):
         orm_mode =True
         
 class Position(BaseModel):
+    Id: Optional[int]
     Position: str
 
     class Config:
@@ -83,6 +84,7 @@ class FileRequest(BaseModel):
         orm_mode = True
 
 class Search(BaseModel):
+    Id: Optional[int]
     Name: str
     Note: str
     Search: bool 

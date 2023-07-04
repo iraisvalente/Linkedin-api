@@ -117,8 +117,8 @@ def append(connection):
                         print(FirstName,LastName,EmailAddress,Company,CompanyPosition)
                         statement=f"Select * from connections where First_Name = '{FirstName.upper()}' and Last_Name = '{LastName.upper()}' and  Company = '{Company.upper()}'"
                         print(statement)
-                    except:
-                        print("Cannot print")
+                    except Exception as e:
+                        return {"result": e}  
                     try:
                         cur.execute(statement)
                         fetched= cur.fetchall()
@@ -126,8 +126,8 @@ def append(connection):
                             statement=f"Insert into connections (First_Name,Last_Name,Email_Address,Company,Position,Connection) Values('{FirstName.upper()}','{LastName.upper()}','{EmailAddress.upper()}','{Company.upper()}','{CompanyPosition.upper()}','{SOAConnection.upper()}')"
                             print(statement)
                             cur.execute(statement)
-                    except:
-                        print("Error Ocurrs")
+                    except Exception as e:
+                        return {"result": e}    
                 cur.close()
     cnx.commit()
     return {"result": "Data base saved"}                         

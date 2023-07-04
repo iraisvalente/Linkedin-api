@@ -9,8 +9,12 @@ from sqlalchemy.sql import text
 from scripts.bard import bard
 from scripts.linked import choice, download, extract, append
 from datetime import datetime
-import pathlib
 import os
+import pathlib
+import shutil
+from datetime import datetime
+import concurrent.futures
+import asyncio
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -318,11 +322,13 @@ def linked_append(linked: schemas.Linked):
         return {"result": "You need to send the mail connection"}
     return append(linked.username)
 
-@app.post("/linked/copy/")
-def linked_copy(file_request: schemas.FileRequest):
-    try: 
+@app.post("/linked/copy/{email}")
+async def linked_copy(email: str, file: UploadFile = File(...)):
+    contents = file.file  
+    
+    try:
         ROOT_DIR = pathlib.Path().resolve()
-        unzip_path = os.path.join(f"{ROOT_DIR}\\LinkedIn", "unzip")
+        unzip_path = os.path.join(ROOT_DIR, "LinkedIn", "unzip")
         now = datetime.now()
         name_format = now.strftime("%m-%d-%Y")
         folder_name = f"Basic_LinkedInDataExport_{name_format}"
@@ -334,18 +340,18 @@ def linked_copy(file_request: schemas.FileRequest):
             while os.path.exists(os.path.join(unzip_path, f"{folder_name} ({version})")):
                 version += 1
             new_folder_name = f"{folder_name} ({version})"
-        
+            
         os.makedirs(os.path.join(unzip_path, new_folder_name))
-        file_path = os.path.join(unzip_path, new_folder_name, f"{file_request.name}.csv")
+        file_path = os.path.join(unzip_path, new_folder_name, file.filename)
         
-        with open(file_path, 'w') as out:
-            out.write(file_request.content)
-        append(file_request.email)
-        
+        with open(file_path, "wb") as f:
+            shutil.copyfileobj(contents, f)
+            
+        result_append = append(email)
         return {"result": "Copied"}
     except Exception as e:
-        return {"result": "Error at copying"}    
-    
+        return {"result": str(e)}
+
 @app.get('/search/position/', response_model=List[schemas.Position])
 def get_all_positions(db: Session = Depends(get_db)):
     positions = db.query(models.Position).all()
@@ -369,12 +375,12 @@ def delete_position(position_id: int, db: Session = Depends(get_db)):
     else:
         raise HTTPException(status_code=404, detail='Position not found')
 
-@app.get('/search/save_search', response_model=List[schemas.Search])
+@app.get('/search/connection_search', response_model=List[schemas.Search])
 def get_all_searches(db: Session = Depends(get_db)):
     searches = db.query(models.Search).all()
     return [schemas.Search.from_orm(search) for search in searches]
 
-@app.post('/search/save_search')
+@app.post('/search/connection_search')
 def create_search(search: schemas.Search, db: Session = Depends(get_db)):
     new_search = models.Search(
         Name=search.Name,
@@ -392,12 +398,12 @@ def create_search(search: schemas.Search, db: Session = Depends(get_db)):
     db.refresh(new_search)
     return {'message': 'Search added successfully'}
 
-@app.delete('/search/save_search/{search_id}')
+@app.delete('/search/connection_search/{search_id}')
 def delete_search(search_id: int, db: Session = Depends(get_db)):
     search = db.query(models.Search).get(search_id)
     if search:
         db.delete(search)
         db.commit()
-        return {'message': 'Position deleted successfully'}
+        return {'message': 'Search deleted successfully'}
     else:
         raise HTTPException(status_code=404, detail='Search not found')
