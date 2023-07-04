@@ -92,3 +92,6 @@ class Search(BaseModel):
     Connection_company: str
     Connection_position: str
     Connection_connection: str
+    
+    class Config:
+        orm_mode = True

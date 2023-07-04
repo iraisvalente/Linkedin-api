@@ -345,6 +345,11 @@ def linked_copy(file_request: schemas.FileRequest):
         return {"result": "Copied"}
     except Exception as e:
         return {"result": "Error at copying"}    
+    
+@app.get('/search/position/', response_model=List[schemas.Position])
+def get_all_positions(db: Session = Depends(get_db)):
+    positions = db.query(models.Position).all()
+    return positions
 
 @app.post('/search/position/')
 def create_position(position: schemas.Position, db: Session = Depends(get_db)):
@@ -363,7 +368,12 @@ def delete_position(position_id: int, db: Session = Depends(get_db)):
         return {'message': 'Position deleted successfully'}
     else:
         raise HTTPException(status_code=404, detail='Position not found')
-    
+
+@app.get('/search/save_search', response_model=List[schemas.Search])
+def get_all_searches(db: Session = Depends(get_db)):
+    searches = db.query(models.Search).all()
+    return [schemas.Search.from_orm(search) for search in searches]
+
 @app.post('/search/save_search')
 def create_search(search: schemas.Search, db: Session = Depends(get_db)):
     new_search = models.Search(
