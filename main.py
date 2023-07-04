@@ -7,7 +7,7 @@ from connection import SessionLocal, engine
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import text
 from scripts.bard import bard
-from scripts.linked import choice, download, extract, append
+from scripts.linked import choice, download, extract, append, append_copy
 from datetime import datetime
 import os
 import pathlib
@@ -343,11 +343,12 @@ async def linked_copy(email: str, file: UploadFile = File(...)):
             
         os.makedirs(os.path.join(unzip_path, new_folder_name))
         file_path = os.path.join(unzip_path, new_folder_name, file.filename)
-        
+            
         with open(file_path, "wb") as f:
             shutil.copyfileobj(contents, f)
             
         result_append = append(email)
+        print(result_append)
         return {"result": "Copied"}
     except Exception as e:
         return {"result": str(e)}

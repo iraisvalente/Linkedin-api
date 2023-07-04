@@ -130,72 +130,43 @@ def append(connection):
                         return {"result": e}    
                 cur.close()
     cnx.commit()
-    return {"result": "Data base saved"}                         
+    return {"result": "Data base saved"}          
 
-'''
-def copy(src):
-    print("Copy")
-    name=src.split("\\")[-1]
-    print(name)
-    print(src)
-    shutil.copyfile(src,f"{unzip_path}\\{name}")
-    print(f"Copied to {unzip_path}")
-    
-
-if '__main__':
-    print("on main")
-    if len(sys.argv) == 1:
-        print(f"Please don't double click on me. Open a terminal and run {sys.argv[0]}")
-        print(f"Please try {sys.argv[0]} [user,pass] action\naction= choice, download,extract or append (choice or download require user and pass {{Sequence should be choice,download,extract then append}})") 
-        keyboard.read_key()
-        print( "Error")
-        sys.exit(1)
+def append_copy(file_path, email):
     try:
-        user=sys.argv[1]
-        passw=sys.argv[2]
-    except:
-        action=sys.argv[1]
-    else:  
-        try:  
-            action=sys.argv[3]
-        except:
-            action=sys.argv[1]
-            connection=sys.argv[2]
-            print(f"{action},{connection}")
-            #print("Error occurred: 1.-User, password or action not defined, 2.-Parameter declared in a function that doesn't requires any parameter.")
-            #sys.exit(2)
-    #print(f"User:{user},Password:{passw},Action:{action}")
-    print(f"Action:{action}")
-    if action == "choice":
-        if len(sys.argv) < 4:
-            print("User or passwd not defined")
-        else:
-            choice(user,passw)
-            print("Done")
-    elif action == "download" :
-        if len(sys.argv) < 4:
-            print("User or passwd not defined")
-        else:
-            download(user,passw)
-            print("Downloaded")
-    elif action == "extract":
-        if len(sys.argv) > 2:
-            print("extract doesnt have any parameter")
-        else:
-            extract()
-            print("Extracted")
-    elif action == "append":
-        if len(sys.argv) < 3:
-            print("You need to send the mail connection")
-        else:
-            append(connection)
-            print(f"Data base saved in {ROOT_DIR}")
-    elif action == "Copy":
-        if len(sys.argv) < 3:
-            print("You need to send the file to copy")
-        else:
-            print("trying to copy")
-            copy(connection)
-    else:
-        print("Action not defined")
-'''
+        csv_file = pd.read_csv(file_path, skiprows=3, encoding='utf-8-sig')
+        cur = cnx.cursor()
+
+        for index, row in csv_file.iterrows():
+            FirstName = str(row["First Name"]).replace("'s", "s").replace("'S", "S").replace("'", "''").strip()
+            LastName = str(row["Last Name"]).replace("'s", "s").replace("'S", "S").replace("'", "''").strip()
+            EmailAddress = str(row["Email Address"]).replace("'s", "s").replace("'S", "S").replace("'", "''").strip()
+            Company = str(row["Company"]).replace("'s", "s").replace("'S", "S").replace("'", "''").strip()
+            CompanyPosition = str(row["Position"]).replace("'s", "s").replace("'S", "S").replace("'", "''").strip()
+            SOAConnection = email
+
+            try:
+                print(FirstName, LastName, EmailAddress, Company, CompanyPosition)
+                statement = '''SELECT * FROM Connections WHERE First_Name = %s AND Last_Name = %s AND Company = %s'''
+                values = (FirstName, LastName, Company)
+                print(statement)
+            except Exception as e:
+                return {"result": str(e)}
+
+            try:
+                cur.execute(statement, values)
+                fetched = cur.fetchall()
+                if len(fetched) == 0:
+                    statement = '''INSERT INTO Connections (First_Name, Last_Name, Email_Address, Company, Position, Connection) VALUES (%s, %s, %s, %s, %s, %s)'''
+                    values = (FirstName.upper(), LastName.upper(), EmailAddress.upper(), Company.upper(), CompanyPosition.upper(), SOAConnection.upper())
+                    print(statement)
+                    cur.execute(statement, values)
+            except Exception as e:
+                return {"result": str(e)}
+
+        cur.close()
+        cnx.commit()
+        return {"result": "Database saved"}
+    except Exception as e:
+        return {"result": str(e)}
+    
