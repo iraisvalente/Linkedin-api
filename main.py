@@ -7,14 +7,14 @@ from connection import SessionLocal, engine
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import text
 from scripts.bard import bard
+from scripts.newsearch import make_search
 from scripts.linked import choice, download, extract, append, append_copy
 from datetime import datetime
 import os
 import pathlib
 import shutil
 from datetime import datetime
-import concurrent.futures
-import asyncio
+import subprocess
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -408,3 +408,12 @@ def delete_search(search_id: int, db: Session = Depends(get_db)):
         return {'message': 'Search deleted successfully'}
     else:
         raise HTTPException(status_code=404, detail='Search not found')
+
+@app.post('/serach/company_position/')
+def bard_ask(ask: schemas.SearchCompanyPosition):
+    try:
+        result = subprocess.check_output(["python", "scripts/newsearch.py", ask.company, ask.position, ask.email, ask.password], stderr=subprocess.STDOUT, text=True)
+        return {"response": result}
+    except subprocess.CalledProcessError as e:
+        return {"response": str(e.output)}
+    

@@ -97,3 +97,12 @@ class Search(BaseModel):
     
     class Config:
         orm_mode = True
+        
+class SearchCompanyPosition(BaseModel):
+    company: str
+    position: str
+    email: str
+    password: str
+    
+    class Config:
+        orm_mode = True
