@@ -85,10 +85,13 @@ def clear_data_from_html_format(text):
 
 
 def get_resume(name:str, driver):
+    resume = ""
     print('Resume: ', end="")
+    resume += 'Resume: '
     try:
         wikipedia.set_lang("en")
         print(wikipedia.summary(name, sentences=10))
+        resume += wikipedia.summary(name, sentences=10)
     except:
         try:
             url = generate_google_search_url(name) + "&hl=en"
@@ -103,9 +106,13 @@ def get_resume(name:str, driver):
                 print(link.a.get('href'))
                 if "wikipedia" in link.a.get('href'):
                     print(get_data_from_wikipedia(link.a.get('href')))
+                    resume += get_data_from_wikipedia(link.a.get('href'))
                     break
         except:
             print("It was not possible to get information about the person.")
+            resume += "It was not possible to get information about the person."
+            
+    return resume
 
     
 def get_data_from_wikipedia(url):
@@ -168,7 +175,8 @@ def get_data_from_wikipedia(url):
     
 
 
-def make_search(company, position, email, password,driver,login):
+def make_search(company, position, email, password, driver, login):
+    response = ""
     URL = generate_google_search_url(f'{company} {position}')
     #if platform.system() == 'Windows':
     #    options.binary_location = "C:\Program Files\Google\Chrome\Application\chrome.exe" 
@@ -247,7 +255,7 @@ def make_search(company, position, email, password,driver,login):
                 people_togheter += "\n\n\n"
             people_togheter +=  ";".join(x for x in link_in_Linkedin)
             print(people_togheter)
-            sys.exit(0)                
+            # sys.exit(0)                
     #print("Trying on error in loggin in or name not found")
     links_list = [] 
     descriptions_list = [] 
@@ -264,6 +272,7 @@ def make_search(company, position, email, password,driver,login):
             if name.strip()=="":
                 1/0
             print(f"Name: {name}")
+            response += f"Name: {name}"
         except:
             try:
                 name=driver.find_element(By.CLASS_NAME,"IZ6rdc")
@@ -272,6 +281,7 @@ def make_search(company, position, email, password,driver,login):
                 if name.strip()=="":
                     1/0
                 print(f"Name: {name}")
+                response += f"Name: {name}"
             except:
                 try:
                     #print("The name of the person is not found on the first page of google search.")
@@ -313,21 +323,17 @@ def make_search(company, position, email, password,driver,login):
                     real_people =  [person for person in people if len(min(person.text.split(" "),key=len)) >2 ]
                     name=real_people[0]
                     print(f"Name: {name}")
+                    response += f"Name: {name}"
                 except Exception as e :
                     print("Name: Can not find any name", e)
+                    response += f"Name: Can not find any name {e}"
                     have_the_name=False
-    
-
-    LINK_LINKEDIN = ""
-
-    
+    LINK_LINKEDIN = ""    
     if have_the_name:
-        get_resume(name, driver)
+        response += f"\n{get_resume(name, driver)}"
         #you need to get the biblio here
         ########Biblio=generate_google_search_url(f"{name}+{args[0]}+wikipedia")
-        LinkedIn_link=ImFeelLucky(f"{name}+{company}+{position}")
-
-        
+        LinkedIn_link=ImFeelLucky(f"{name}+{company}+{position}")        
         # If I have the name and I have the Link ...
         # I will try validated the url with the name
         if name and  LinkedIn_link:
@@ -337,7 +343,7 @@ def make_search(company, position, email, password,driver,login):
                 if name_ in LinkedIn_link:
                     have_the_link = True
                     LINK_LINKEDIN = LinkedIn_link
-                    sys.exit(0)
+                    #sys.exit(0)
         
         # If I have the name but I dont have the link ...
         # I will try get the Link
@@ -357,8 +363,10 @@ def make_search(company, position, email, password,driver,login):
                                 have_the_link = True
                                 LINK_LINKEDIN = x_link
                                 print("Link: ", LINK_LINKEDIN)
-                                sys.exit(0)
-            #else:
+                                response += f"\nLink: {LINK_LINKEDIN}"
+                                #sys.exit(0)
+            else:
+                response += "\nLink: No linkedin link found"
             #    print("Can not find any link")
             
         # if LINK_LINKEDIN == "":
@@ -372,6 +380,7 @@ def make_search(company, position, email, password,driver,login):
                 linkedin_links_list.append(link_found)
             else:
                 print("Link: No linkedin link found")
+                response += "\nLink: No linkedin link found"
                 
         if len(linkedin_links_list) > 0:
             LinkedIn_link =  linkedin_links_list[0]
@@ -393,12 +402,17 @@ def make_search(company, position, email, password,driver,login):
                 real_people =  [person for person in people if len(min(person.text.split(" "),key=len)) >2 ]
                 name=real_people[0]
                 print(f"Name: {name}")
-                get_resume(name, driver)
+                response += f"Name: {name}"
+                response += f"\n{get_resume(name, driver)}"
                 LINK_LINKEDIN=ImFeelLucky(f"{name}+{company}+{position}")                
                 print(LINK_LINKEDIN) 
+                response += f"\nLink: {LINK_LINKEDIN}"
                 
     if LINK_LINKEDIN == "":
-            print("Link: No linkedin link found")          
+        print("Link: No linkedin link found")     
+        response += "\nLink: No linkedin link found"   
+            
+    return response
 
 
 #if __name__ == "__main__":
