@@ -21,6 +21,19 @@ from collections import Counter
 from nltk import ne_chunk, pos_tag, word_tokenize
 from nltk.tree import Tree
 from os import getcwd, makedirs
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import NoSuchElementException
+from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome  import ChromeDriverManager
+from selenium.webdriver import ActionChains
 from inscriptis import get_text
 from nltk.tree import Tree
 from collections import Counter
@@ -168,33 +181,45 @@ def get_data_from_wikipedia(url):
     
 
 
-def make_search(company, position, email, password,driver,login):
+def make_search(company, position, email, password):
     URL = generate_google_search_url(f'{company} {position}')
-    #if platform.system() == 'Windows':
-    #    options.binary_location = "C:\Program Files\Google\Chrome\Application\chrome.exe" 
-    #elif platform.system() == 'Linux':
-    #    options.binary_location = "/usr/bin/google-chrome"
-    #else:
-    #    print("""
-    #        THIS SCRIPT ONLY WORKINK WITH LINUX OR WINDOWS SYSTEM,
-    #        PLEASE CONFIG FOR YOUR SYSTEM.
-    #    """)
-    #login = 1
+    options = Options()
+    options.add_argument("start-maximized"); 
+    #options.add_argument("--headless"); 
+    options.add_argument("disable-infobars"); 
+    options.add_argument("--disable-extensions"); 
+    options.add_argument("--disable-gpu"); 
+    options.add_argument("--disable-dev-shm-usage"); 
+    options.add_argument("--no-sandbox");
+    options.add_experimental_option('excludeSwitches', ['enable-logging'])
+    if platform.system() == 'Windows':
+        options.binary_location = "C:\Program Files\Google\Chrome\Application\chrome.exe" 
+
+    elif platform.system() == 'Linux':
+        options.binary_location = "/usr/bin/google-chrome"
+        
+    else:
+        print("""
+            THIS SCRIPT ONLY WORKINK WITH LINUX OR WINDOWS SYSTEM,
+            PLEASE CONFIG FOR YOUR SYSTEM.
+        """)
+    login = 1
     #print("Trying to log in")
-    #try:
-    #    driver.get("https://www.linkedin.com/")
-    #    sleep(10)
-    #    search_bar = driver.find_element(By.ID,"session_key")
-    #    search_bar.clear()
-    #    search_bar.send_keys(email)
-    #    search_bar = driver.find_element(By.ID,"session_password")
-    #    search_bar.clear()
-    #    search_bar.send_keys(f"{password}{Keys.RETURN}")
-    #    sleep(15)
-    #    #print("logged in")
-    #except:
-    #    #print("Not logged")
-    #    login=0
+    try:
+        driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()),options=options)
+        driver.get("https://www.linkedin.com/")
+        sleep(10)
+        search_bar = driver.find_element(By.ID,"session_key")
+        search_bar.clear()
+        search_bar.send_keys(email)
+        search_bar = driver.find_element(By.ID,"session_password")
+        search_bar.clear()
+        search_bar.send_keys(f"{password}{Keys.RETURN}")
+        sleep(15)
+        #print("logged in")
+    except:
+        #print("Not logged")
+        login=0
     links_list = [] 
     descriptions_list = [] 
     n_pages = 2    
@@ -288,6 +313,7 @@ def make_search(company, position, email, password,driver,login):
                     for description in search_descriptions:
                         descriptions_list.append(description.text)
                         linkstring+=description.text
+                    driver.close()
                     linkstring=linkstring.replace("www"," ")
                     linkstring=linkstring.replace("."," ")
                     linkstring=linkstring.replace("//"," ")
@@ -401,20 +427,19 @@ def make_search(company, position, email, password,driver,login):
             print("Link: No linkedin link found")          
 
 
-#if __name__ == "__main__":
-#def start(argv1,argv2,argv3,argv4)
+if __name__ == "__main__":
     nltk.download('punkt', quiet=True)
     nltk.download('averaged_perceptron_tagger', quiet=True)
     nltk.download('maxent_ne_chunker', quiet=True)
     nltk.download('words', quiet=True)
     nltk.download('stopwords', quiet=True)
-    #parser = argparse.ArgumentParser(description='Script to get the name of the person in a especial position')
-    #parser.add_argument('Company', type=str, help='Company Name')
-    #parser.add_argument('position', type=str, help='Position')
-    #parser.add_argument('email', type=str, help='Email')
-    #parser.add_argument('password', type=str, help='Password')
-    #args = parser.parse_args()
-    #arg=f'{argv1} {argv2} {argv3} {argv4}'
+    parser = argparse.ArgumentParser(description='Script to get the name of the person in a especial position')
+    parser.add_argument('Company', type=str, help='Company Name')
+    parser.add_argument('position', type=str, help='Position')
+    parser.add_argument('email', type=str, help='Email')
+    parser.add_argument('password', type=str, help='Password')
+    args = parser.parse_args()
+    arg=f'{sys.argv[1]} {sys.argv[2]} {sys.argv[3]} {sys.argv[4]}'
     #print(arg)
-    #make_search(argv1, argv2, argv3,argv4)
+    make_search(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])
     

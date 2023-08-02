@@ -15,67 +15,6 @@ import pathlib
 import shutil
 from datetime import datetime
 import subprocess
-from time import sleep
-
-
-
-
-
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import NoSuchElementException
-from selenium import webdriver
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.service import Service
-from webdriver_manager.chrome  import ChromeDriverManager
-from selenium.webdriver import ActionChains
-
-
-
-
-options = Options()
-options.add_argument("start-maximized"); 
-#options.add_argument("--headless"); 
-options.add_argument("disable-infobars"); 
-options.add_argument("--disable-extensions"); 
-options.add_argument("--disable-gpu"); 
-options.add_argument("--disable-dev-shm-usage"); 
-options.add_argument("--no-sandbox");
-options.add_experimental_option('excludeSwitches', ['enable-logging'])
-
-
-
-login=0
-driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()),options=options)
-driver.get("https://accounts.google.com/")
-sleep(10)
-search_bar = driver.find_element(By.ID,"identifierId")
-search_bar.clear()
-search_bar.send_keys(f"Aiver1@aiver.ai{Keys.RETURN}")
-sleep(10)
-search_bar = driver.find_element(By.NAME,"Passwd")
-search_bar.clear()
-search_bar.send_keys(f"Aiver!2023!{Keys.RETURN}")
-sleep(10)
-driver.get("https://www.linkedin.com/login")
-sleep(10)
-search_bar = driver.find_element(By.ID,"username")
-search_bar.clear()
-search_bar.send_keys("Aiver1@aiver.ai")
-search_bar = driver.find_element(By.ID,"password")
-search_bar.clear()
-search_bar.send_keys(f"Aiver!2023!{Keys.RETURN}")
-sleep(15)
-login=1
-
-
-
-
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -130,6 +69,7 @@ def show_connections_by_lastname(lastname: str, db:Session=Depends(get_db)):
 
 @app.get('/connections/email/{email}',response_model=List[schemas.Connection])
 def show_connections_by_email(email: str, db:Session=Depends(get_db)):
+    connections = db.query(models.Connection).filter_by(Email_Address=email).all()
     return connections
 
 @app.get('/connections/company/{company}',response_model=List[schemas.Connection])
@@ -186,7 +126,6 @@ def common_companies(db:Session=Depends(get_db)):
         FROM Connections 
         WHERE Connection <> 'NaN'
         GROUP BY Connection 
-    connections = db.query(models.Connection).filter_by(Email_Address=email).all()
         ORDER BY COUNT(Connection) 
         DESC LIMIT 5
         '''))
@@ -473,7 +412,7 @@ def delete_search(search_id: int, db: Session = Depends(get_db)):
 @app.post('/serach/company_position/')
 def bard_ask(ask: schemas.SearchCompanyPosition):
     try:
-        result = make_search(ask.company, ask.position, ask.email, ask.password,driver,0)#subprocess.check_output(["python", "scripts/newsearch.py", ask.company, ask.position, ask.email, ask.password], stderr=subprocess.STDOUT, text=True)
+        result = subprocess.check_output(["python", "scripts/newsearch.py", ask.company, ask.position, ask.email, ask.password], stderr=subprocess.STDOUT, text=True)
         return {"response": result}
     except subprocess.CalledProcessError as e:
         return {"response": str(e.output)}
