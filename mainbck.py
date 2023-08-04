@@ -15,9 +15,6 @@ import pathlib
 import shutil
 from datetime import datetime
 import subprocess
-import nltk
-
-
 from time import sleep
 
 
@@ -56,31 +53,28 @@ options.add_experimental_option('excludeSwitches', ['enable-logging'])
 login=0
 driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()),options=options)
 driver.get("https://accounts.google.com/")
-sleep(5)
+sleep(10)
 search_bar = driver.find_element(By.ID,"identifierId")
 search_bar.clear()
 search_bar.send_keys(f"Aiver1@aiver.ai{Keys.RETURN}")
-sleep(5)
+sleep(10)
 search_bar = driver.find_element(By.NAME,"Passwd")
 search_bar.clear()
 search_bar.send_keys(f"Aiver!2023!{Keys.RETURN}")
-sleep(3)
+sleep(10)
 driver.get("https://www.linkedin.com/login")
-sleep(5)
+sleep(10)
 search_bar = driver.find_element(By.ID,"username")
 search_bar.clear()
 search_bar.send_keys("Aiver1@aiver.ai")
 search_bar = driver.find_element(By.ID,"password")
 search_bar.clear()
 search_bar.send_keys(f"Aiver!2023!{Keys.RETURN}")
-sleep(3)
+sleep(15)
 login=1
 
-nltk.download('punkt', quiet=True)
-nltk.download('averaged_perceptron_tagger', quiet=True)
-nltk.download('maxent_ne_chunker', quiet=True)
-nltk.download('words', quiet=True)
-nltk.download('stopwords', quiet=True)
+
+
 
 
 models.Base.metadata.create_all(bind=engine)
@@ -136,7 +130,6 @@ def show_connections_by_lastname(lastname: str, db:Session=Depends(get_db)):
 
 @app.get('/connections/email/{email}',response_model=List[schemas.Connection])
 def show_connections_by_email(email: str, db:Session=Depends(get_db)):
-    connections = db.query(models.Connection).filter_by(Email_Address=email).all()
     return connections
 
 @app.get('/connections/company/{company}',response_model=List[schemas.Connection])
@@ -193,6 +186,7 @@ def common_companies(db:Session=Depends(get_db)):
         FROM Connections 
         WHERE Connection <> 'NaN'
         GROUP BY Connection 
+    connections = db.query(models.Connection).filter_by(Email_Address=email).all()
         ORDER BY COUNT(Connection) 
         DESC LIMIT 5
         '''))
@@ -479,9 +473,7 @@ def delete_search(search_id: int, db: Session = Depends(get_db)):
 @app.post('/serach/company_position/')
 def bard_ask(ask: schemas.SearchCompanyPosition):
     try:
-        #result = make_search(company= ask.company, position=ask.position, email=  ask.email, password=ask.password, driver=driver, login=1)
-        result = make_search(ask.company, ask.position, ask.email, ask.password, driver, 1)
-        #result = subprocess.check_output(["python", "scripts/newsearch.py", ask.company, ask.position, ask.email, ask.password], stderr=subprocess.STDOUT, text=True)
+        result = make_search(ask.company, ask.position, ask.email, ask.password,driver,0)#subprocess.check_output(["python", "scripts/newsearch.py", ask.company, ask.position, ask.email, ask.password], stderr=subprocess.STDOUT, text=True)
         return {"response": result}
     except subprocess.CalledProcessError as e:
         return {"response": str(e.output)}

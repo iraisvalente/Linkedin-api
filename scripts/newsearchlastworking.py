@@ -21,12 +21,23 @@ from collections import Counter
 from nltk import ne_chunk, pos_tag, word_tokenize
 from nltk.tree import Tree
 from os import getcwd, makedirs
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import NoSuchElementException
+from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome  import ChromeDriverManager
+from selenium.webdriver import ActionChains
 from inscriptis import get_text
 from nltk.tree import Tree
 from collections import Counter
 import wikipedia
-from selenium.webdriver.chrome.options import Options
-
 
 def generate_google_search_url(*query):
     query= str(query[0]).split(" ")
@@ -111,6 +122,11 @@ def get_resume(name:str, driver):
             
 
     
+
+    
+
+    
+    
 def get_data_from_wikipedia(url):
     
     url = url
@@ -172,67 +188,60 @@ def get_data_from_wikipedia(url):
 
 
 def make_search(*args) -> str:
-    print(args)
-    driver=args[4]
-    login = args[5]
-    #args=args[0:2]
-    arg=f'{args[0]} {args[1]}'
-    #print(args)
-    URL = generate_google_search_url(arg)
+    URL = generate_google_search_url(*args)
     LIMIT_RESULTS_GOOGLE_SEARCH = 20
-    #options = Options()
-    #options.add_argument("start-maximized"); 
+    options = Options()
+    options.add_argument("start-maximized"); 
     #options.add_argument("--headless"); 
-    #options.add_argument("disable-infobars"); 
-    #options.add_argument("--disable-extensions"); 
-    #options.add_argument("--disable-gpu"); 
-    #options.add_argument("--disable-dev-shm-usage"); 
-    #options.add_argument("--no-sandbox");
-    #options.add_experimental_option('excludeSwitches', ['enable-logging'])
-    #if platform.system() == 'Windows':
-    #    options.binary_location = "C:\Program Files\Google\Chrome\Application\chrome.exe" #
-    #
-    #elif platform.system() == 'Linux':
-    #    options.binary_location = "/usr/bin/google-chrome"
+    options.add_argument("disable-infobars"); 
+    options.add_argument("--disable-extensions"); 
+    options.add_argument("--disable-gpu"); 
+    options.add_argument("--disable-dev-shm-usage"); 
+    options.add_argument("--no-sandbox");
+    options.add_experimental_option('excludeSwitches', ['enable-logging'])
+    if platform.system() == 'Windows':
+        options.binary_location = "C:\Program Files\Google\Chrome\Application\chrome.exe" 
+
+    elif platform.system() == 'Linux':
+        options.binary_location = "/usr/bin/google-chrome"
         
-    #else:
-    #    print("""
-    #        THIS SCRIPT ONLY WORKINK WITH LINUX OR WINDOWS SYSTEM,
-    #        PLEASE CONFIG FOR YOUR SYSTEM.
-    #    """)
-    #login = 1
+    else:
+        print("""
+            THIS SCRIPT ONLY WORKINK WITH LINUX OR WINDOWS SYSTEM,
+            PLEASE CONFIG FOR YOUR SYSTEM.
+        """)
+    login = 1
     #print("Trying to log in")
-    #try:
-    #    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()),options=options)
-    #    driver.get("https://www.linkedin.com/")
-    #    sleep(10)
-    #    search_bar = driver.find_element(By.ID,"session_key")
-    #    search_bar.clear()
-    #    search_bar.send_keys("arturo@mobil.aullox.com")
-    #    search_bar = driver.find_element(By.ID,"session_password")
-    #    search_bar.clear()
-    #    search_bar.send_keys(f"ohohdigoyo.1{Keys.RETURN}")
-    #    sleep(15)
-    #    #print("logged in")
-    #except:
-    #    #print("Not logged")
-    #    login=0
+    try:
+        driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()),options=options)
+        driver.get("https://www.linkedin.com/")
+        sleep(10)
+        search_bar = driver.find_element(By.ID,"session_key")
+        search_bar.clear()
+        search_bar.send_keys("arturo@mobil.aullox.com")
+        search_bar = driver.find_element(By.ID,"session_password")
+        search_bar.clear()
+        search_bar.send_keys(f"ohohdigoyo.1{Keys.RETURN}")
+        sleep(15)
+        #print("logged in")
+    except:
+        #print("Not logged")
+        login=0
     links_list = [] 
     descriptions_list = [] 
     n_pages = 2    
     have_the_name = True
-    name= ""
-    linkstring= ""
+    name=""
+    linkstring=""
     People_in_Linkedin = []
     About_in_Linkedin = []
     link_in_Linkedin = []
     people_togheter=""
-    if login == 1 or login == "1":
-        print("Trying on login")
+    if login ==1:
+        #print("Trying after login")
         for page in range(1, n_pages):
             try:
                 url = URL + "&start="+str((page - 1) * 10)+ "&hl=en"
-                print(f"trying {url}")
                 driver.get(url)        
                 soup = BeautifulSoup(driver.page_source, 'html.parser')
                 search_links = soup.find_all('div', class_="yuRUbf")
@@ -241,7 +250,6 @@ def make_search(*args) -> str:
                     links_list.append(link.a.get('href'))
                     if "linkedin" in link.a.get('href').lower():
                         href=link.a.get('href')
-                        print(f"Trying {href}")
                         driver.get(href)
                         sleep(7)
                         soup = BeautifulSoup(driver.page_source, 'html.parser')
@@ -249,68 +257,34 @@ def make_search(*args) -> str:
                         experience_positions = soup.find_all("span", {"class": "visually-hidden"})#.find('ul')
                         Complete_String=" "
                         Complete_String= " ".join(position.text for  position in experience_positions )
-                        try:
-                            This_position= Complete_String.split("Experience")[1].split(" · ")
-                            if This_position == []:
-                                This_position= Complete_String.split("Experiencia")[1].split(" · ")
-                            This_position= " ".join(position for position in This_position)
-                            this_position_in_a_list=This_position.upper().split(" ")
-                        except:
-                            pass
-                        try:
-                            This_About=Complete_String.split("About")[1].split("Activity")[0]
-                        except:
-                            pass
-                        try:
-                            position_in_a_list = args[0].upper().split(" ")[1:]
-                        except:
-                            pass
+                        This_position= Complete_String.split("Experience")[1].split(" · ")
+                        This_position= " ".join(position for position in This_position)
+                        This_About=Complete_String.split("About")[1].split("Activity")[0]
+                        position_in_a_list = args[0].upper().split(" ")[1:]
+                        this_position_in_a_list=This_position.upper().split(" ")
                         #print(potential_name)
                         #print(position_in_a_list)
                         #print(this_position_in_a_list)
                         verify =  [x for x in position_in_a_list if x in this_position_in_a_list]
                         if len(verify) == len(position_in_a_list):
-                            try:
-                                People_in_Linkedin.append(potential_name)
-                            except:
-                                pass
-                            try:
-                                About_in_Linkedin.append(This_About)
-                            except:
-                                pass
-                            try:
-                                link_in_Linkedin.append(href)
-                            except:
-                                pass
-                        
+                            People_in_Linkedin.append(potential_name)
+                            About_in_Linkedin.append(This_About)
+                            link_in_Linkedin.append(href)
             except:
                 pass
         if People_in_Linkedin != []:
             for i in range (0,len(People_in_Linkedin)):
-                have_the_name = 1
-                try:
-                    people_togheter += "Name: " + People_in_Linkedin[i] + "\n"
-                except:
-                    pass
-                try:
-                    people_togheter += "Resume: " + About_in_Linkedin[i] + "\n"
-                except:
-                    pass
-                try:
-                    people_togheter += "Link : " + link_in_Linkedin[i] + "\n"
-                    people_togheter += "\n\n\n"
-                except:
-                    pass
-                #people_togheter +=  ";".join(x for x in link_in_Linkedin)
-                print(people_togheter)
-                return people_togheter
-            #print(people_togheter)
-            #sys.exit(0)                
-    print("Trying on error in loggin in or name not found")
+                people_togheter += People_in_Linkedin[i] + "\n"
+                people_togheter += About_in_Linkedin[i] + "\n"
+                people_togheter += "\n\n\n"
+            people_togheter +=  ";".join(x for x in link_in_Linkedin)
+            print(people_togheter)
+            sys.exit(0)                
+    #print("Trying on error in loggin in or name not found")
     links_list = [] 
     descriptions_list = [] 
     n_pages = 2    
-    have_the_name = False
+    have_the_name = True
     name=""
     for page in range(1, n_pages):
         url = URL + "&start="+str((page - 1) * 10)+ "&hl=en"
@@ -323,7 +297,6 @@ def make_search(*args) -> str:
             if name.strip()=="":
                 1/0
             print(f"{name}")
-            have_the_name=True
         except:
             try:
                 name=driver.find_element(By.CLASS_NAME,"IZ6rdc")
@@ -332,7 +305,6 @@ def make_search(*args) -> str:
                 if name.strip()=="":
                     1/0
                 print(f"{name}")
-                have_the_name=True
             except:
                 try:
                     print("The name of the person is not found on the first page of google search.")
@@ -340,6 +312,8 @@ def make_search(*args) -> str:
                     search_links = soup.find_all('div', class_="yuRUbf")
                     search_descriptions = soup.find_all('div', class_="Z26q7c UK95Uc")
                     linkstring=""
+                    
+                    
                     for link in search_links:
                         #print(link.a.get('href'))
                         links_list.append(link.a.get('href'))
@@ -373,16 +347,21 @@ def make_search(*args) -> str:
                     real_people =  [person for person in people if len(min(person.text.split(" "),key=len)) >2 ]
                     name=real_people[0]
                     print(f"{name}")
-                    have_the_name=True
                 except Exception as e :
                     print("Can not find any name", e)
                     have_the_name=False
+    
+
     LINK_LINKEDIN = ""
+   
+    
     if have_the_name:
         get_resume(name, driver)
         #you need to get the biblio here
         ########Biblio=generate_google_search_url(f"{name}+{args[0]}+wikipedia")
         LinkedIn_link=ImFeelLucky(f"{name}+{args[0]}")
+
+        
         # If I have the name and I have the Link ...
         # I will try validated the url with the name
         if name and  LinkedIn_link:
@@ -393,7 +372,8 @@ def make_search(*args) -> str:
                     have_the_link = True
                     LINK_LINKEDIN = LinkedIn_link
                     print("Link: ", LINK_LINKEDIN)
-                    #sys.exit(0)
+                    sys.exit(0)
+        
         # If I have the name but I dont have the link ...
         # I will try get the Link
         linkedin_links_list = []
@@ -402,6 +382,7 @@ def make_search(*args) -> str:
             for link_found in links_list:
                 if "linkedin" in link_found:
                     linkedin_links_list.append(link_found)
+
             if len(linkedin_links_list) > 0:
                 name_list = str(name).lower().split(' ')
                 for name_ in name_list:
@@ -411,9 +392,11 @@ def make_search(*args) -> str:
                                 have_the_link = True
                                 LINK_LINKEDIN = x_link
                                 print("Link: ", LINK_LINKEDIN)
-                                #sys.exit(0)
+                                sys.exit(0)
             #else:
             #    print("Can not find any link")
+            
+            
     # If  I dont have the name, but I have the link.
     # I will try get the name
     else:
@@ -430,6 +413,7 @@ def make_search(*args) -> str:
                 url_cleaned = re.sub(r'[^\w\s]', ' ', LinkedIn_link)
                 for characteristic in url_characteristics:
                     url_cleaned = url_cleaned.replace(characteristic," ")
+                
                 list_of_tokens= url_cleaned.split(' ')
                 list_of_tokens = [x for x in list_of_tokens if x != '']
                 list_of_tokens = [x.capitalize() for x in list_of_tokens if x != ' ']
@@ -444,3 +428,27 @@ def make_search(*args) -> str:
                 get_resume(name, driver)
                 LinkedIn_link=ImFeelLucky(f"{name}+{args[0]}")
                 print(LinkedIn_link)
+                
+            
+
+
+
+
+
+
+
+
+if __name__ == "__main__":
+    nltk.download('punkt', quiet=True)
+    nltk.download('averaged_perceptron_tagger', quiet=True)
+    nltk.download('maxent_ne_chunker', quiet=True)
+    nltk.download('words', quiet=True)
+    nltk.download('stopwords', quiet=True)
+    parser = argparse.ArgumentParser(description='Script to get the name of the person in a especial position')
+    parser.add_argument('Company', type=str, help='Company Name')
+    parser.add_argument('position', type=str, help='Position')
+    args = parser.parse_args()
+    arg=f'{sys.argv[1]} {sys.argv[2]}'
+    #print(arg)
+    make_search(arg)
+    
