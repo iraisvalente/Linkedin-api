@@ -38,7 +38,7 @@ from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome  import ChromeDriverManager
 from selenium.webdriver import ActionChains
 
-
+import threading
 
 
 options = Options()
@@ -287,6 +287,7 @@ def unique_companies(db: Session = Depends(get_db)):
     return {'Count': count}
 
 @app.get('/unique_positions/',response_model=schemas.Count)
+
 def unique_positions(db: Session = Depends(get_db)):
     query = text('SELECT COUNT(DISTINCT Position) FROM Connections;')
     result = db.execute(query)
@@ -476,13 +477,34 @@ def delete_search(search_id: int, db: Session = Depends(get_db)):
     else:
         raise HTTPException(status_code=404, detail='Search not found')
 
+threads = []
+import queue
 @app.post('/serach/company_position/')
 def bard_ask(ask: schemas.SearchCompanyPosition):
     try:
-        #result = make_search(company= ask.company, position=ask.position, email=  ask.email, password=ask.password, driver=driver, login=1)
-        result = make_search(ask.company, ask.position, ask.email, ask.password, driver, 1)
+        th = threading.Thread(target=make_search, kwargs=({"company": ask.company, "position":ask.position, "email":ask.email, "password":ask.password, "login":1, "driver":driver, "index_tab": len(threads)})) 
+        th.start()
+        threads.append(th)   
+        
+        for thread in threads:
+            thread.join()
+
+        results = []
+        
+        result_queue = queue.Queue()
+        while not result_queue.empty():
+            result = result_queue.get()
+            results.append(result)
+    
+        #result = make_search(company= ask.company, position=ask.position, email=ask.email, password=ask.password, login=1, driver=driver)
+        
+        
+        # result = make_search(ask.company, ask.position, ask.email, ask.password, driver, 1)
         #result = subprocess.check_output(["python", "scripts/newsearch.py", ask.company, ask.position, ask.email, ask.password], stderr=subprocess.STDOUT, text=True)
-        return {"response": result}
+
+        for x in results:
+            print("response", x)
+            return {"response": x}
     except subprocess.CalledProcessError as e:
         return {"response": str(e.output)}
     
